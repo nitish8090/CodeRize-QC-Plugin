@@ -28,24 +28,4 @@ class AllocatedAOITable(Database):
             print("[ERROR] Database is not connected")
             return ['Database Error']
 
-    @classmethod
-    def get_qgis_layer(cls, vendor_name='All'):
-        uri = QgsDataSourceUri()
-        uri.setConnection(
-            Database.host,
-            str(Database.port),
-            Database.database_name,
-            Database.user,
-            Database.password
-        )
 
-        where_clause = "" if vendor_name is 'All' else f"{cls.vendor_name_column} = '{vendor_name}'"
-
-        uri.setDataSource(
-            cls.schema_name,
-            cls.name,
-            cls.geometry_column,
-            where_clause
-        )
-        layer = QgsVectorLayer(uri.uri(), "Allocated AOI", "postgres")
-        return layer

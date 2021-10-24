@@ -7,6 +7,8 @@ from qgis.core import QgsDataSourceUri, QgsVectorLayer, QgsProject
 from qgis.utils import iface
 
 from ..PGDatabase import Database, AllocatedAOITable
+from ..Layers import AllocatedAOILayer, AILayer, FootprintLayer
+
 
 from coderize_qc_plugin.PGDatabase import AllocatedAOITable
 
@@ -22,23 +24,30 @@ class CRFeatureApproverDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
 
         # self.cbox_vendor_list
-        self.btn_load_aoi.clicked.connect(self.load_aoi)
+        self.btn_load_aoi.clicked.connect(self.load_layers)
 
         self.update_vendor_list()
 
     def update_vendor_list(self):
-        print("[DEBUG] updating vendor list")
+        print("[DEBUG] Updating vendor list")
 
         allocated_aoi = AllocatedAOITable()
         vendor_list = allocated_aoi.get_all_vendors()
         vendor_list.append('All')
         self.cbox_vendor_list.addItems(vendor_list)
 
-    def load_aoi(self):
-        print("Loading AOI as Layer")
+    def load_layers(self):
+        print("[DEBUG] Loading Allocated AOI as Layer")
+        allocated_aoi_layer = AllocatedAOILayer.get_from_postgres(vendor_name=self.cbox_vendor_list.currentText())
+        allocated_aoi_layer.add_to_qgis()
 
-        allocated_aoi_layer = AllocatedAOITable.get_qgis_layer(vendor_name=self.cbox_vendor_list.currentText())
-        if not allocated_aoi_layer.isValid():
-            print("Layer %s did not load" % allocated_aoi_layer.name())
+        print("[DEBUG] Getting Boundary of Allocated AOI")
+        boundary = allocated_aoi_layer.get_outer_boundary()
 
-        QgsProject.instance().addMapLayers([allocated_aoi_layer])
+        print("[DEBUG] Loading AI as Layer")
+        ai_layer = AILayer.get_from_postgres(intersecting_geometry=boundary)
+        ai_layer.add_to_qgis()
+
+        print("[DEBUG] Loading Footprint as Layer")
+        footprint_layer = FootprintLayer.get_from_postgres(intersecting_geometry=boundary)
+        footprint_layer.add_to_qgis()
