@@ -1,13 +1,13 @@
 from ..PGDatabase import AllocatedAOITable, Database
-from qgis.core import QgsDataSourceUri, QgsVectorLayer, QgsProject
+from qgis.core import QgsDataSourceUri, QgsVectorLayer, QgsProject, QgsMarkerSymbol
+from qgis.core import QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsLineSymbol, QgsFillSymbol
 
-import shapely
 import shapely.wkt
-from shapely.geometry.multipolygon import MultiPolygon
 from shapely.ops import unary_union
 
 
 class AllocatedAOILayer:
+    name = 'Allocated AOI'
 
     def __init__(self):
         self.layer = None
@@ -33,7 +33,7 @@ class AllocatedAOILayer:
         )
 
         _instance = cls()
-        _instance.layer = QgsVectorLayer(uri.uri(), "Allocated AOI", "postgres")
+        _instance.layer = QgsVectorLayer(uri.uri(), cls.name, "postgres")
         return _instance
 
     def add_to_qgis(self):
@@ -50,7 +50,23 @@ class AllocatedAOILayer:
             a.append(p)
         m = unary_union(a)
         print(m.wkt)
-        return f"SRID={self.get_srid()};{m.wkt}"
+        return f"{m.wkt}"
 
     def get_srid(self):
-        return 3857
+        return self.layer.crs().srsid()
+
+    def apply_symbology(self):
+
+        qc_statuses = {'Pending': 'red', 'Approved': 'green', '': 'yellow'}
+
+        categories = []
+        for qc_status, color in qc_statuses.items():
+            symbol = QgsFillSymbol.createSimple(
+                {'color': '255,0,0,0', 'outline_color': color, 'outline_style': 'solid'})
+            print(symbol.symbolLayers()[0].properties())
+            categories.append(QgsRendererCategory(qc_status, symbol, qc_status))
+
+        categorized_renderer = QgsCategorizedSymbolRenderer('qc_status', categories)
+
+        self.layer.setRenderer(categorized_renderer)
+        self.layer.triggerRepaint()

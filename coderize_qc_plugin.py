@@ -176,6 +176,7 @@ class CodeRizeQCPlugin:
             text=self.tr(u'CodeRize QC Plugin'),
             callback=self.run,
             parent=self.iface.mainWindow())
+        self.run()
 
     # --------------------------------------------------------------------------
 

@@ -24,6 +24,7 @@ class AILayer:
             where_clause = f"""
             ST_Intersects({AITable.schema_name}.{AITable.name}.{AITable.geometry_column}, 
             '{intersecting_geometry}')
+            AND "qc_status" = 'Pending'
             """
             # print(where_clause)
 

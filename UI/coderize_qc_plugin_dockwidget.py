@@ -26,11 +26,12 @@ import os
 
 from qgis.PyQt import QtGui, QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
+from qgis.utils import iface
+from .coderize_qc_plugin_load_aoi_dialog import CRFeatureApproverDialog
+from ..Tools import SelectorTool
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'coderize_qc_plugin_dockwidget_base.ui'))
-
-from .coderize_qc_plugin_load_aoi_dialog import CRFeatureApproverDialog
 
 
 class CodeRizeQCPluginDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
@@ -47,6 +48,9 @@ class CodeRizeQCPluginDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.setupUi(self)
 
         self.btn_load_aoi_tool.clicked.connect(self.load_aoi_dialog_show)
+        self.btn_selector_tool.clicked.connect(self.activate_selector_tool)
+
+        self.selector_tool = SelectorTool(iface.mapCanvas())
 
         self.load_aoi_dialog = CRFeatureApproverDialog()
 
@@ -57,3 +61,7 @@ class CodeRizeQCPluginDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def load_aoi_dialog_show(self):
         self.load_aoi_dialog.show()
         print("Loading AOI")
+
+    def activate_selector_tool(self):
+        print("tool activated")
+        iface.mapCanvas().setMapTool(self.selector_tool)

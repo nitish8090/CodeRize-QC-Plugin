@@ -24,6 +24,7 @@ class FootprintLayer:
             where_clause = f"""
             ST_Intersects({FootPrintTable.schema_name}.{FootPrintTable.name}.{FootPrintTable.geometry_column}, 
             '{intersecting_geometry}')
+            AND "qc_status" = 'Pending'
             """
             # print(where_clause)
 

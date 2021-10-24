@@ -39,10 +39,11 @@ class CRFeatureApproverDialog(QtWidgets.QDialog, FORM_CLASS):
     def load_layers(self):
         print("[DEBUG] Loading Allocated AOI as Layer")
         allocated_aoi_layer = AllocatedAOILayer.get_from_postgres(vendor_name=self.cbox_vendor_list.currentText())
+        allocated_aoi_layer.apply_symbology()
         allocated_aoi_layer.add_to_qgis()
 
         print("[DEBUG] Getting Boundary of Allocated AOI")
-        boundary = allocated_aoi_layer.get_outer_boundary()
+        boundary = f"SRID={allocated_aoi_layer.get_srid()};{allocated_aoi_layer.get_outer_boundary()}"
 
         print("[DEBUG] Loading AI as Layer")
         ai_layer = AILayer.get_from_postgres(intersecting_geometry=boundary)
